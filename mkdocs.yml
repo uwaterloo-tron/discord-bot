@@ -1,0 +1,35 @@
+site_name: Discord Bot Documentation
+
+theme:
+  name: "material"
+  palette:
+    primary: "black"
+    accent: "blue"
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.tracking
+    - navigation.top
+    - navigation.indexes
+extra:
+  font:
+    text: "Slabo 13px"
+    code: "Ubuntu Mono"
+markdown_extensions:
+  - codehilite:
+      guess_lang: false
+  - toc:
+      permalink: true
+  - footnotes
+  - pymdownx.superfences
+  - pymdownx.emoji: # enables support for emoji
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - mdx_truly_sane_lists
+
+edit_uri: edit/master/docs
+docs_dir: docs
+site_dir: docs-gen
+repo_url: https://uwaterloo-tron.github.io/discord-bot/
+site_url: https://uwaterloo-tron.github.io/discord-bot/
