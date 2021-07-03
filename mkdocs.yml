@@ -31,5 +31,5 @@ markdown_extensions:
 edit_uri: edit/master/docs
 docs_dir: docs
 site_dir: docs-gen
-repo_url: https://uwaterloo-tron.github.io/discord-bot/
+repo_url: https://github.com/uwaterloo-tron/discord-bot
 site_url: https://uwaterloo-tron.github.io/discord-bot/
