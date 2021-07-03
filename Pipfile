@@ -5,12 +5,12 @@ name = "pypi"
 
 [packages]
 "discord.py" = "*"
-python-dotenv = "*"
 mkdocs = "*"
 mkdocs-material = "*"
 pymdown-extensions = "*"
 markdown = "*"
 mdx-truly-sane-lists = "*"
+pymongo = "*"
 
 [dev-packages]
 
