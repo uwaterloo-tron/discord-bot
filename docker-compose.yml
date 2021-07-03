@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  bot:
+    build: .
+    depends_on:
+      - mongo
+    environment:
+      - DISCORD_TOKEN
+      - STAGE=${ENV:-dev}
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
