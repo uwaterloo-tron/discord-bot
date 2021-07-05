@@ -70,6 +70,16 @@ jobs:
           docker image prune -af \
           '
 
+      - name: Deploy Docs
+        run: |-
+          docker container run \
+          -e GITHUB_ACTOR=$GITHUB_ACTOR \
+          -e GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
+          -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
+          "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA" \
+          /bot/.github/scripts/deploy-docs.sh
+
+
       - name: Prune Container Registry
         run: |-
           echo Prune all before $(date +%F)

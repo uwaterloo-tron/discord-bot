@@ -1,9 +1,6 @@
 .idea/
 .vscode/
-docs/
 docs-gen/
-.github/
-.git/
 
 ### Python template
 # Byte-compiled / optimized / DLL files
