@@ -1,27 +1,36 @@
 # Tron Bot
 
-A discord bot built on discord.py(link to discord.py docs)
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+A discord bot created with [discord.py](https://github.com/Rapptz/discord.py) :fire:
 
-## Commands
+---
 
-* Contributing
-* Cogs
-* Testing
+## Project outline
+
+### Code
+The bot made of several [cogs](https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html).
+These cogs are comprised of
+[commands](https://discordpy.readthedocs.io/en/stable/ext/commands/commands.html),
+[tasks](https://discordpy.readthedocs.io/en/stable/ext/tasks/index.html),
+and
+[event listeners](https://discordpy.readthedocs.io/en/stable/api.html#event-reference).
 
 
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
+### Database
 
-## Project layout
-    type xd
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+The bot uses a [MongoDB](https://docs.mongodb.com/manual/) database which can be accessed with
+[pymongo](https://pymongo.readthedocs.io/en/stable/tutorial.html).
 
-## Bugs
 
-If you find any bugs, please submit an issue on the repo
+## Getting started
+
+Check out the
+[discord.py docs](https://discordpy.readthedocs.io/en/stable/).
+
+
+## Issues
+
+If you find a bug, typo, or something just isn't working as expected, feel free to
+[raise an issue](https://github.com/uwaterloo-tron/discord-bot/issues).
+
+You can also create an issue to suggest features or changes.
+
