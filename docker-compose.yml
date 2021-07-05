@@ -1,7 +1,9 @@
 version: "3.9"
 services:
   bot:
-    build: .
+    build:
+      context: .
+      dockerfile: ./build/Dockerfile.bot
     container_name: discord-bot
     depends_on:
       - mongodb

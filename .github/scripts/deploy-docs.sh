@@ -22,4 +22,4 @@ fi
 git remote rm origin
 git remote add origin "${remote_repo}"
 
-mkdocs gh-deploy --config-file "/bot/mkdocs.yml" --force
+mkdocs gh-deploy --config-file "/documentation/mkdocs.yml" --force
