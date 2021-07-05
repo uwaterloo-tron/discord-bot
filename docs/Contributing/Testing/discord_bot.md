@@ -3,7 +3,7 @@
 You will need your own Discord bot to test your changes locally.
 
 *Note: the images and content of the following guide were taken or summarized from
-[an article on freecodecamp.org by Beau Carnes](https://www.freecodecamp.org/news/create-a-discord-bot-with-python/).*
+[this article on freecodecamp.org by Beau Carnes](https://www.freecodecamp.org/news/create-a-discord-bot-with-python/).*
 
 
 ## Creating the Bot

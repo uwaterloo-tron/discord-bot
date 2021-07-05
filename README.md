@@ -3,7 +3,7 @@
 Bot for the tron discord server
 
 Please see the [extended documentation][1] for details about what the bot can do
-and instructions on how you can test the bot yourself. :book:
+and instructions on how you can test the bot yourself. :books:
 
 
 ## Contributing
