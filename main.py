@@ -15,8 +15,22 @@ logging.basicConfig(level=config.LOG_LEVEL)
 
 status_msg = "development" if config.STAGE == "dev" else "with the fabric of reality"
 
+
+async def _determine_prefix(bot, message):
+    guild = message.guild
+    # Only allow custom prefixs in guild
+    if guild:
+        guilds_col = config.db['guilds']
+        current_guild = guilds_col.find_one({'guild_id': guild.id})
+        if current_guild is None or 'prefix' not in current_guild.keys():
+            return '?='
+        return current_guild['prefix']
+    else:
+        return '?='
+
+
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix='?=', intents=intents, help_command=None)
+bot = commands.Bot(command_prefix=_determine_prefix, intents=intents, help_command=None)
 
 initial_extensions = [f"cogs.{i[:-3]}" for i in os.listdir('cogs') if i.endswith('.py')]
 
@@ -26,8 +40,8 @@ if __name__ == '__main__':
         try:
             bot.load_extension(extension)
         except (commands.ExtensionNotFound, commands.ExtensionFailed) as e:
-            print(f'Failed to load extension {extension}')
-            print(e)
+            logging.error(f'Failed to load extension {extension}')
+            logging.error(e)
 
 
 @bot.event
@@ -38,8 +52,19 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx, error):
-    print(error)
-    await ctx.send('`invalid command`')
+    logging.error(error)
+
+
+@bot.command()
+@commands.guild_only()
+async def setprefix(ctx, prefix=""):
+    # If empty arg, set to default prefix
+    new_prefix = prefix or '?='
+    guilds_col = config.db['guilds']
+    guilds_col.update_one({'guild_id': ctx.guild.id},
+                          {'$set': {'prefix': new_prefix}})
+
+    await ctx.send("Prefix set!")
 
 
 bot.run(config.TOKEN)
