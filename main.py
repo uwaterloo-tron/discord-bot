@@ -1,9 +1,18 @@
 import os
 import discord
+import logging
 from discord.ext import commands
 import config
 
 print(f"STAGE={config.STAGE}")
+print(f"LOG_LEVEL={config.LOG_LEVEL}")
+
+if config.LOG_LEVEL not in ['CRITICAL', 'ERROR', 'WARNING', 'INFO', 'DEBUG']:
+    logging.error(f"Invalid log level: '{config.LOG_LEVEL}'. Falling back to WARNING")
+    config.LOG_LEVEL = 'WARNING'
+
+logging.basicConfig(level=config.LOG_LEVEL)
+
 status_msg = "development" if config.STAGE == "dev" else "with the fabric of reality"
 
 intents = discord.Intents.all()

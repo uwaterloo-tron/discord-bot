@@ -8,6 +8,7 @@ services:
     environment:
       - DISCORD_TOKEN
       - STAGE=${ENV:-dev}
+      - LOG_LEVEL=${LOG_LEVEL:-WARNING}
   mongodb:
     image: mongo
     container_name: discord-bot-db
