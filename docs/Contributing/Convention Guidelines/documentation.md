@@ -1,4 +1,7 @@
 # Documentation
+
+To see what your changes will look like in the docs, follow the guide here :point_right:
+[Documentation Testing](https://uwaterloo-tron.github.io/discord-bot/Contributing/Testing/documentation/)
  
 ## Adding a new cog
 

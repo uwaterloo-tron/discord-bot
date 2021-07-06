@@ -2,13 +2,14 @@
 
 ## General
 
-- All functionality (commands, tasks, event listeners, etc.) should be added to
-  [cogs](https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html), not the bot itself.
+- In general, all functionality (commands, tasks, event listeners, etc.) should be added to
+  [cogs](https://discordpy.readthedocs.io/en/stable/ext/commands/cogs.html), not the bot itself
 
-- Cogs should not depend on each other.
-  Removing any single cog should have no effect on the functionality of others.
+- Cogs should not depend on each other if possible
 
-- Try to add [typing](https://docs.python.org/3/library/typing.html) where possible.
+- Try to add [typing](https://docs.python.org/3/library/typing.html) where possible
+
+- Add [logging](https://docs.python.org/3/howto/logging.html) where appropriate 
 
 - Comment your code!
   ([docstrings](https://www.python.org/dev/peps/pep-0257/)

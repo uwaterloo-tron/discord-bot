@@ -1,5 +1,8 @@
 # Getting started
 
+Check out the
+[discord.py docs](https://discordpy.readthedocs.io/en/stable/).
+
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/)
@@ -24,10 +27,14 @@ the dependencies used during testing will be re-built in the docker container.
 3. Create a file named `.env` in the project directory. Inside the file, add the following lines:
   ```shell
   DISCORD_TOKEN=[paste token here]
-  ENV=[your stage]
+  ENV=[your stage (optional)]
+  LOG_LEVEL=[desired log level (optional)]
   ```
   - [Where you can get your token](https://uwaterloo-tron.github.io/discord-bot/Contributing/Testing/discord_bot/#getting-your-bot-token)
   - [Which stage you should use](https://uwaterloo-tron.github.io/discord-bot/Contributing/Testing/stages/)
+  - `LOG_LEVEL` must be one of the following:
+    
+    `CRITICAL`, `ERROR`, `WARNING` (default), `INFO`, `DEBUG`
 
 4. Start the bot and database with `docker-compose up --build -d`
   - If you make any changes, run this command again to update the container
