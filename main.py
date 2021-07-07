@@ -35,13 +35,12 @@ bot = commands.Bot(command_prefix=_determine_prefix, intents=intents, help_comma
 initial_extensions = [f"cogs.{i[:-3]}" for i in os.listdir("cogs") if i.endswith(".py")]
 
 # load cogs
-if __name__ == "__main__":
-    for extension in initial_extensions:
-        try:
-            bot.load_extension(extension)
-        except (commands.ExtensionNotFound, commands.ExtensionFailed) as e:
-            logging.error(f"Failed to load extension {extension}")
-            logging.error(e)
+for extension in initial_extensions:
+    try:
+        bot.load_extension(extension)
+    except (commands.ExtensionNotFound, commands.ExtensionFailed) as e:
+        logging.error(f"Failed to load extension {extension}")
+        logging.error(e)
 
 
 @bot.event

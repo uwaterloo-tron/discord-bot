@@ -8,5 +8,5 @@ class PollCog(commands.Cog):
 
 
 def setup(bot):
-    # adds cog to bot from main.py
+    # Adds cog to bot from main.py
     bot.add_cog(PollCog(bot))
