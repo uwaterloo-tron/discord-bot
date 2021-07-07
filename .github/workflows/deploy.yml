@@ -1,4 +1,4 @@
-name: Build and Deploy to Compute Engine
+name: Deploy Bot and Publish Docs
 
 on:
   push:
@@ -77,7 +77,7 @@ jobs:
           ./.github/scripts/gcrgc.sh "gcr.io/$PROJECT_ID/$IMAGE" $(date +%F)
 
   deploy-docs:
-    name: Build and Deploy Docs
+    name: Build and Publish Docs
     runs-on: ubuntu-latest
     environment: production
 
@@ -92,7 +92,7 @@ jobs:
             --tag docs-image \
             .
 
-      - name: Deploy
+      - name: Publish
         run: |-
           docker container run \
             -e GITHUB_ACTOR=$GITHUB_ACTOR \
