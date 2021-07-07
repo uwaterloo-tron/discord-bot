@@ -12,10 +12,7 @@ Check out the
 
 ## Installation
 
-Run `pipenv install` in the project directory.
-
-This is just for proper code inspections in your IDE,
-the dependencies used during testing will be re-built in the docker container.
+Run `pipenv install --dev` in the project directory.
 
 
 ## Testing
