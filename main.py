@@ -58,6 +58,7 @@ async def on_command_error(ctx, error):
 
 
 @bot.command()
+@config.is_admin()
 @commands.guild_only()
 async def setprefix(ctx, prefix=""):
     # If empty arg, set to default prefix
@@ -65,6 +66,7 @@ async def setprefix(ctx, prefix=""):
     guilds_col = config.db["guilds"]
     guilds_col.update_one({"guild_id": ctx.guild.id}, {"$set": {"prefix": new_prefix}})
 
+    logging.debug(f"Changed prefix for guild '{ctx.guild.id}' to: {new_prefix}")
     await ctx.send("Prefix set!")
 
 
