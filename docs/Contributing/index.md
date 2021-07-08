@@ -12,7 +12,10 @@ Check out the
 
 ## Installation
 
-Run `pipenv install --dev` in the project directory.
+Run the following command in the project directory:
+```shell
+pipenv install --dev
+```
 
 
 ## Testing
@@ -33,14 +36,25 @@ Run `pipenv install --dev` in the project directory.
     
     `CRITICAL`, `ERROR`, `WARNING` (default), `INFO`, `DEBUG`
 
-4. Start the bot and database with `docker-compose up --build -d`
+4. Start the bot and database with the following command:
+    ```shell
+    docker-compose up --build -d
+    ```
   - If you make any changes, run this command again to update the container
-  - To reset the database: `docker-compose down -v && docker-compose up --build -d`
-    
+  - To reset the database:
+    ```shell
+    docker-compose down -v && docker-compose up --build -d
+    ```
     **WARNING:** this cannot be undone
      
-5. When you are done, tear down by running `docker-compose down`
-  - **Recommended:** run `docker image prune -f` to remove all dangling images (previous versions)
+5. When you are done, tear down by running the following command:
+    ```shell
+    docker-compose down
+    ```
+  - **Recommended:** remove all dangling images (previous versions):
+    ```shell
+    docker image prune -f
+    ```  
 
 ## Creating a Pull Request
 
