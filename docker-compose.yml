@@ -3,6 +3,8 @@ services:
   bot:
     build:
       context: .
+      args:
+        - POETRY_VERSION=1.1.7
       dockerfile: ./build/Dockerfile.bot
     container_name: discord-bot
     depends_on:

@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "tron-discord-bot"
+version = "0.1.0"
+description = "Bot for the tron discord server"
+authors = ["Cameron Kinsella <53635597+cameronkinsella@users.noreply.github.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+"discord.py" = "^1.7.3"
+mkdocs = "^1.2.1"
+mkdocs-material = "^7.1.9"
+pymdown-extensions = "^8.2"
+mdx-truly-sane-lists = "^1.2"
+pymongo = "^3.11.4"
+
+[tool.poetry.dev-dependencies]
+black = {extras = ["d"], version = "^21.6b0"}
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

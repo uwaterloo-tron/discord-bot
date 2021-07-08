@@ -7,14 +7,14 @@ Check out the
 
 - [Docker](https://docs.docker.com/get-docker/)
 - [Python 3.9](https://www.python.org/downloads/release/python-396/) :snake:
-- [pipenv](https://pypi.org/project/pipenv/)
+- [Poetry](https://python-poetry.org/docs/)
 
 
 ## Installation
 
 Run the following command in the project directory:
 ```shell
-pipenv install --dev
+poetry install
 ```
 
 
