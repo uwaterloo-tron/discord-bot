@@ -99,7 +99,6 @@ jobs:
       - name: Publish
         run: |-
           docker container run \
-            -e GITHUB_ACTOR=$GITHUB_ACTOR \
             -e GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
             -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
             docs-image
