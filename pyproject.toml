@@ -1,8 +1,9 @@
 [tool.poetry]
 name = "tron-discord-bot"
 version = "0.1.0"
-description = "Bot for the tron discord server"
+description = "A bot for the tron Discord server"
 authors = ["Cameron Kinsella <53635597+cameronkinsella@users.noreply.github.com>"]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.9"
