@@ -8,7 +8,6 @@ RUN cd /tmp && poetry config virtualenvs.create false && poetry install --no-dev
 WORKDIR /documentation
 COPY .git ./.git
 COPY docs ./docs
-COPY mkdocs.yml ./
-COPY .github/scripts/deploy-docs.sh ./
+COPY .github/scripts/deploy-docs.sh mkdocs.yml ./
 
 CMD ./deploy-docs.sh
