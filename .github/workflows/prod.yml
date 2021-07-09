@@ -1,25 +1,34 @@
-name: Deploy Bot and Publish Docs
+name: Production Workflow
 
 on:
   push:
     branches:
       - master
+  schedule:
+    # runs every day at 00:00 UTC
+    - cron: '0 0 * * *'
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
   GCE_INSTANCE: tron-bot
   GCE_ZONE: us-central1-a
-  IMAGE : discord-bot
+  IMAGE: discord-bot
 
 jobs:
   deploy-bot:
     name: Build, Publish, and Deploy Bot
     runs-on: ubuntu-latest
     environment: production
+    if: ${{ github.event_name == 'push' }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Python Linting
+        uses: RojerGS/python-black-check@v1.2
+        with:
+          line-length: '88'
 
       # Setup gcloud CLI
       - uses: google-github-actions/setup-gcloud@v0.2.1
@@ -46,7 +55,7 @@ jobs:
         run: |-
           docker push "gcr.io/$PROJECT_ID/$IMAGE:$GITHUB_SHA"
 
-      # Send docker-compose file and .bashrc with environment variables
+      # Send docker-compose file and .bashrc with environment variables to GCE instance
       - name: Transfer Files
         run: |-
           echo """
@@ -60,7 +69,7 @@ jobs:
           gcloud --quiet compute scp .bashrc $GCE_INSTANCE:~ --zone $GCE_ZONE
           gcloud --quiet compute scp docker-compose.prod.yml $GCE_INSTANCE:~ --zone $GCE_ZONE
 
-      # Deploy the Docker image to the GCE VM
+      # Deploy the Docker image in the GCE instance
       - name: Deploy
         run: |-
           gcloud compute ssh $GCE_INSTANCE --zone $GCE_ZONE --command \
@@ -70,15 +79,11 @@ jobs:
             docker image prune -af \
             '
 
-      - name: Prune Container Registry
-        run: |-
-          echo Prune all before $(date +%F)
-          ./.github/scripts/gcrgc.sh "gcr.io/$PROJECT_ID/$IMAGE" $(date +%F)
-
   deploy-docs:
     name: Build and Publish Docs
     runs-on: ubuntu-latest
     environment: production
+    if: ${{ github.event_name == 'push' }}
 
     steps:
       - name: Checkout
