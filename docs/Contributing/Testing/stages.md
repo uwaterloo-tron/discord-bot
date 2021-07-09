@@ -2,7 +2,7 @@
 
 For reference when you're developing:
 
-The environment variable `ENV` states what environment the bot is running in. It can be one of the following:
+The environment variable `STAGE` states what environment the bot is running in. It can be one of the following:
 
 - `dev` (default if none is provided):
   - Enables cheats, dev tools, etc. 
@@ -21,7 +21,7 @@ The environment variable `ENV` states what environment the bot is running in. It
 ---
 
 You can add code into the bot to enable dev tools and configurations with this.
-The value of `ENV` is stored in a variable named `STAGE` in
+The value of your selected stage is stored in a variable named `STAGE` in
 [config.py](https://github.com/uwaterloo-tron/discord-bot/blob/master/config.py).
 
 Example:

@@ -13,7 +13,7 @@ services:
       - .:/bot
     environment:
       - DISCORD_TOKEN
-      - STAGE=${ENV:-dev}
+      - STAGE=${STAGE:-dev}
       - LOG_LEVEL=${LOG_LEVEL:-WARNING}
   mongodb:
     image: mongo
