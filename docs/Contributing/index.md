@@ -5,9 +5,9 @@ Check out the
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/)
-- [Python 3.9](https://www.python.org/downloads/release/python-396/) :snake:
-- [Poetry](https://python-poetry.org/docs/)
+- :fontawesome-brands-docker: [Docker](https://docs.docker.com/get-docker/) 
+- :snake: [Python 3.9](https://www.python.org/downloads/release/python-396/) 
+- :poetry: [Poetry](https://python-poetry.org/docs/)
 
 
 ## Installation

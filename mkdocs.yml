@@ -23,10 +23,13 @@ markdown_extensions:
       permalink: true
   - footnotes
   - pymdownx.superfences
+  - mdx_truly_sane_lists
   - pymdownx.emoji: # enables support for emoji
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
-  - mdx_truly_sane_lists
+      options:
+        custom_icons:
+          - docs/.icons
 
 edit_uri: edit/master/docs
 docs_dir: docs
