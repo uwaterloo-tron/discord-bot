@@ -1,10 +1,8 @@
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-![Deploy Workflow](https://github.com/uwaterloo-tron/discord-bot/actions/workflows/deploy.yml/badge.svg)
-
-
----
-
 # Tron Discord Bot
+
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+![Deploy Workflow](https://github.com/uwaterloo-tron/discord-bot/actions/workflows/prod.yml/badge.svg)
+
 
 A bot for the tron Discord server.
 
