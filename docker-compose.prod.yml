@@ -7,7 +7,7 @@ services:
       - mongodb
     environment:
       - DISCORD_TOKEN
-      - STAGE=${ENV:-dev}
+      - STAGE=prod
       - LOG_LEVEL=${LOG_LEVEL:-WARNING}
   mongodb:
     image: mongo

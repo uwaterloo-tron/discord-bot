@@ -27,7 +27,7 @@ poetry install
 3. Create a file named `.env` in the project directory. Inside the file, add the following lines:
   ```shell
   DISCORD_TOKEN=[paste token here]
-  ENV=[your stage (optional)]
+  STAGE=[your stage (optional)]
   LOG_LEVEL=[desired log level (optional)]
   ```
   - [Where you can get your token](https://uwaterloo-tron.github.io/discord-bot/Contributing/Testing/discord_bot/#getting-your-bot-token)
