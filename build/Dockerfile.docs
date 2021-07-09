@@ -1,9 +1,7 @@
 FROM python:3.9-slim-buster@sha256:8ffb28a4fca06fc0914dac67e801cf447df0225ea23ee1b42685de02f2555235
 
-ENV POETRY_VERSION=1.1.7
-
 RUN apt update && apt install git -y
-RUN pip install poetry==$POETRY_VERSION
+RUN pip install poetry==1.1.7
 COPY poetry.lock pyproject.toml /tmp/
 RUN cd /tmp && poetry config virtualenvs.create false && poetry install --no-dev --no-interaction
 
