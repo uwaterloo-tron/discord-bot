@@ -3,6 +3,7 @@ import discord
 import logging
 from discord.ext import commands
 import config
+from discord_slash import SlashCommand
 
 print(f"STAGE={config.STAGE}")
 print(f"LOG_LEVEL={config.LOG_LEVEL}")
@@ -31,7 +32,7 @@ async def _determine_prefix(bot, message):
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=_determine_prefix, intents=intents, help_command=None)
-
+slash = SlashCommand(bot, sync_commands=True, sync_on_cog_reload=True)
 initial_extensions = [f"cogs.{i[:-3]}" for i in os.listdir("cogs") if i.endswith(".py")]
 
 # load cogs
