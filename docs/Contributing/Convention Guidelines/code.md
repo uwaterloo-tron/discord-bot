@@ -16,6 +16,7 @@
   are a great way to explain how your commands work)
   
 - Always format your code with [Black](https://github.com/psf/black) before committing
+  (your build will fail if you don't)
   - For VSCode, you can set the formatting provider to "black" in your settings. 
     [Check this guide](https://dev.to/adamlombard/how-to-use-the-black-python-code-formatter-in-vscode-3lo0).
   - For PyCharm or IntelliJ, try the [BlackConnect plugin](https://plugins.jetbrains.com/plugin/14321-blackconnect). 

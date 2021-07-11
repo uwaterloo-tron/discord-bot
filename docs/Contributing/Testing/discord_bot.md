@@ -11,7 +11,7 @@ You will need your own Discord bot to test your changes locally.
 1\. Make sure you’re logged on to the [Discord website](https://discord.com).
 
 
-2\. Navigate to the [application page](https://discord.com/developers/applications).
+2\. Go to this page :point_right: [application page](https://discord.com/developers/applications).
 
 
 3\. Click on the “New Application” button.
@@ -35,7 +35,8 @@ That's it! Your bot has been created!
 
 ## Inviting the Bot to your Server
 
-Go to the "OAuth2" tab of your Discord application. Then select "bot" under the "scopes" section.
+Go to the "OAuth2" tab of your Discord application. Then select "bot" and "applications.commands"
+under the "scopes" section.
 Then check the "Administrator" permission and press the 'copy' button above the permissions.
 
 ![Discord OAuth2](../../images/discord_oauth2.png)
