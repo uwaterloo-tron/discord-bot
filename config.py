@@ -1,12 +1,12 @@
 import os
-import pymongo
+import motor.motor_asyncio
 from discord.ext import commands
 
 TOKEN = os.getenv("DISCORD_TOKEN")
 STAGE = os.getenv("STAGE", "dev")
 LOG_LEVEL = os.getenv("LOG_LEVEL", "WARNING")
 
-mongo_client = pymongo.MongoClient("mongodb")
+mongo_client = motor.motor_asyncio.AsyncIOMotorClient("mongodb")
 db = mongo_client["discord"]
 
 

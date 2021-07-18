@@ -70,7 +70,7 @@ class PollCog(commands.Cog):
             "selections": [[]] * option_count,
             "embed": json.dumps(embed.to_dict()),
         }
-        polls_col.insert_one(poll)
+        await polls_col.insert_one(poll)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -81,7 +81,7 @@ class PollCog(commands.Cog):
         if payload.emoji.name not in emojis:
             return
         polls_col = config.db["polls"]
-        poll = polls_col.find_one(
+        poll = await polls_col.find_one(
             {"message_id": payload.message_id, "guild_id": payload.guild_id}
         )
         if poll is None:
@@ -91,7 +91,7 @@ class PollCog(commands.Cog):
         await message.remove_reaction(payload.emoji.name, payload.member)
         index = emojis.index(payload.emoji.name)
 
-        user_vote = polls_col.find_one(
+        user_vote = await polls_col.find_one(
             {
                 "message_id": payload.message_id,
                 "guild_id": payload.guild_id,
@@ -100,17 +100,17 @@ class PollCog(commands.Cog):
         )
         if user_vote is not None:
             for idx, _ in enumerate(poll["selections"]):
-                polls_col.update_one(
+                await polls_col.update_one(
                     {"message_id": payload.message_id, "guild_id": payload.guild_id},
                     {"$pull": {f"selections.{idx}": payload.user_id}},
                 )
-        polls_col.update_one(
+        await polls_col.update_one(
             {"message_id": payload.message_id, "guild_id": payload.guild_id},
             {"$push": {f"selections.{index}": payload.user_id}},
         )
         embed = discord.Embed.from_dict(json.loads(poll["embed"]))
         embed.remove_field(-1)
-        poll = polls_col.find_one(
+        poll = await polls_col.find_one(
             {"message_id": payload.message_id, "guild_id": payload.guild_id}
         )
         values = " \u200B ".join(
