@@ -22,7 +22,7 @@ async def _determine_prefix(bot, message):
     # Only allow custom prefixs in guild
     if guild:
         guilds_col = config.db["guilds"]
-        current_guild = guilds_col.find_one({"guild_id": guild.id})
+        current_guild = await guilds_col.find_one({"guild_id": guild.id})
         if current_guild is None or "prefix" not in current_guild.keys():
             return "?="
         return current_guild["prefix"]
