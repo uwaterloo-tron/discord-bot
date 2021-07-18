@@ -17,7 +17,7 @@ class DatabaseCog(commands.Cog):
             "guild_id": guild.id,
             "prefix": "?=",
         }
-        guilds_col.insert_one(guild_info)
+        await guilds_col.insert_one(guild_info)
 
         users_list = []
         for member in guild.members:
@@ -29,7 +29,7 @@ class DatabaseCog(commands.Cog):
                 }
             )
 
-        guild_users = users_col.insert_many(users_list)
+        guild_users = await users_col.insert_many(users_list)
         logging.info(f"Inserted {len(guild_users.inserted_ids)} new users")
 
     @commands.Cog.listener()
@@ -38,8 +38,8 @@ class DatabaseCog(commands.Cog):
         guilds_col = config.db["guilds"]
         users_col = config.db["users"]
 
-        guilds_col.delete_one({"guild_id": guild.id})
-        guild_users = users_col.delete_many({"guild_id": guild.id})
+        await guilds_col.delete_one({"guild_id": guild.id})
+        guild_users = await users_col.delete_many({"guild_id": guild.id})
 
         logging.info(f"Deleted {guild_users.deleted_count} users")
 
@@ -51,7 +51,7 @@ class DatabaseCog(commands.Cog):
             "guild_id": member.guild.id,
             "bot": member.bot,
         }
-        users_col.insert_one(user_dict)
+        await users_col.insert_one(user_dict)
 
     @commands.Cog.listener()
     async def on_member_leave(self, member):
@@ -61,7 +61,7 @@ class DatabaseCog(commands.Cog):
             "guild_id": member.guild.id,
             "bot": member.bot,
         }
-        users_col.delete_one(user_dict)
+        await users_col.delete_one(user_dict)
 
 
 def setup(bot):

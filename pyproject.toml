@@ -12,8 +12,9 @@ mkdocs = "^1.2.1"
 mkdocs-material = "^7.1.9"
 pymdown-extensions = "^8.2"
 mdx-truly-sane-lists = "^1.2"
-pymongo = "^3.11.4"
 discord-py-slash-command = "^2.3.2"
+dateparser = "^1.0.0"
+motor = "^2.4.0"
 
 [tool.poetry.dev-dependencies]
 black = {extras = ["d"], version = "^21.6b0"}
