@@ -17,7 +17,7 @@ def is_admin():
     async def predicate(ctx):
         if ctx.message.author.guild_permissions.administrator:
             return True
-        await ctx.send("This is an admin-only command")
+        await ctx.send("This is an admin-only command <a:NOP:799726788132732928>")
         return False
 
     return commands.check(predicate)
