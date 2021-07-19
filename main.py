@@ -26,13 +26,12 @@ async def _determine_prefix(bot, message):
         if current_guild is None or "prefix" not in current_guild.keys():
             return "?="
         return current_guild["prefix"]
-    else:
-        return "?="
+    return ""
 
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=_determine_prefix, intents=intents, help_command=None)
-slash = SlashCommand(bot, sync_commands=True, sync_on_cog_reload=True)
+slash = SlashCommand(bot, sync_commands=True)
 initial_extensions = [f"cogs.{i[:-3]}" for i in os.listdir("cogs") if i.endswith(".py")]
 
 # load cogs
@@ -50,6 +49,12 @@ async def on_ready():
         activity=discord.Game(name=status_msg), status=discord.Status.online
     )
     print("🔥 Yimin Wu is Online 🔥")
+
+
+@bot.event
+async def on_message(message):
+    if message.guild:
+        await bot.process_commands(message)
 
 
 @bot.event
