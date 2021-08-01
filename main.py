@@ -48,7 +48,7 @@ async def on_ready():
     await bot.change_presence(
         activity=discord.Game(name=status_msg), status=discord.Status.online
     )
-    print("🔥 Yimin Wu is Online 🔥")
+    print("🔥 Tron Bot is Online 🔥")
 
 
 @bot.event
