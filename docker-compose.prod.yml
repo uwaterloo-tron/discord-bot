@@ -5,6 +5,8 @@ services:
     container_name: discord-bot
     depends_on:
       - mongodb
+    ports:
+      - "5000"
     environment:
       - DISCORD_TOKEN
       - STAGE=prod
@@ -13,6 +15,6 @@ services:
     image: mongo
     container_name: discord-bot-db
     ports:
-      - 27017:27017
+      - "27017:27017"
     volumes:
       - /mongodb:/data/db
