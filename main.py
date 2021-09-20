@@ -17,20 +17,13 @@ logging.basicConfig(level=config.LOG_LEVEL)
 status_msg = "development" if config.STAGE == "dev" else "with the fabric of reality"
 
 
-async def _determine_prefix(bot, message):
+async def _determine_prefix(bot: commands.Bot, message: discord.Message):
     guild = message.guild
-    # Only allow custom prefixs in guild
-    if guild:
-        guilds_col = config.db["guilds"]
-        current_guild = await guilds_col.find_one({"guild_id": guild.id})
-        if current_guild is None or "prefix" not in current_guild.keys():
-            return "?="
-        return current_guild["prefix"]
-    return ""
+    return await config.get_prefix(guild)
 
 
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix=_determine_prefix, intents=intents, help_command=None)
+bot = commands.Bot(command_prefix=_determine_prefix, intents=intents)
 slash = SlashCommand(bot, sync_commands=True)
 initial_extensions = [f"cogs.{i[:-3]}" for i in os.listdir("cogs") if i.endswith(".py")]
 
@@ -52,20 +45,42 @@ async def on_ready():
 
 
 @bot.event
-async def on_message(message):
-    if message.guild:
-        await bot.process_commands(message)
+async def on_message(message: discord.Message):
+    guild = message.guild
+    if guild:
+        if message.content == f"<@!{bot.user.id}>":
+            prefix = await config.get_prefix(guild)
+            embed = discord.Embed(
+                title="",
+                description=f"**This guild's command prefix is:** `{prefix}`",
+                color=discord.Color.red(),
+            )
+            await message.channel.send(embed=embed)
+        else:
+            await bot.process_commands(message)
 
 
 @bot.event
-async def on_command_error(ctx, error):
+async def on_command_error(ctx: commands.Context, error: Exception):
+    if config.STAGE != "prod":
+        await ctx.send(f"`Error: {error}`")
     logging.error(error)
 
 
 @bot.command()
 @config.is_admin()
 @commands.guild_only()
-async def setprefix(ctx, prefix=""):
+async def setprefix(ctx, prefix: str = "", who: discord.User = None):
+    """
+    Sets the bot's command prefix for the current guild.
+
+    :param prefix: The new prefix for the guild. Resets to default if None given. [Optional]
+    :param who: Specify which bot you are addressing in case there are overlapping prefixes. [Optional]
+    """
+    print(who)
+    if who is not None and who != bot.user:
+        return
+
     # If empty arg, set to default prefix
     new_prefix = prefix or "?="
     guilds_col = config.db["guilds"]

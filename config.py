@@ -1,4 +1,5 @@
 import os
+import discord
 import motor.motor_asyncio
 from discord.ext import commands
 
@@ -11,6 +12,18 @@ db = mongo_client["discord"]
 
 
 # Common command checks
+
+
+async def get_prefix(guild: discord.Guild):
+    # Only allow prefixs in guild
+    if guild:
+        guilds_col = db["guilds"]
+        current_guild = await guilds_col.find_one({"guild_id": guild.id})
+        if current_guild is None or "prefix" not in current_guild.keys():
+            # default prefix
+            return "?="
+        return current_guild["prefix"]
+    return ""
 
 
 def is_admin():
