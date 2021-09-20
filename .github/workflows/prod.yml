@@ -1,12 +1,10 @@
 name: Production Workflow
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - master
-  schedule:
-    # runs every day at 00:00 UTC
-    - cron: '0 0 * * *'
 
 env:
   PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
@@ -19,7 +17,6 @@ jobs:
     name: Build, Publish, and Deploy Bot
     runs-on: ubuntu-latest
     environment: production
-    if: ${{ github.event_name == 'push' }}
 
     steps:
       - name: Checkout
@@ -83,7 +80,6 @@ jobs:
     name: Build and Publish Docs
     runs-on: ubuntu-latest
     environment: production
-    if: ${{ github.event_name == 'push' }}
 
     steps:
       - name: Checkout
@@ -102,23 +98,3 @@ jobs:
             -e GITHUB_REPOSITORY=$GITHUB_REPOSITORY \
             -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} \
             docs-image
-
-  prune-registry:
-    name: Prune Container Registry
-    runs-on: ubuntu-latest
-    environment: production
-    if: ${{ github.event_name == 'schedule' }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      # Setup gcloud CLI
-      - uses: google-github-actions/setup-gcloud@v0.2.1
-        with:
-          service_account_key: ${{ secrets.GCE_SA_KEY }}
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
-
-      - run: |-
-          echo Prune all before $(date +%F)
-          ./.github/scripts/gcrgc.sh "gcr.io/$PROJECT_ID/$IMAGE" $(date +%F)
