@@ -9,6 +9,8 @@ services:
       - mongodb
     volumes:
       - .:/bot
+    ports:
+      - "5000"
     environment:
       - DISCORD_TOKEN
       - STAGE=${STAGE:-dev}
@@ -17,7 +19,7 @@ services:
     image: mongo
     container_name: discord-bot-db
     ports:
-      - 27017:27017
+      - "27017:27017"
     volumes:
       - mongodb:/data/db
 
