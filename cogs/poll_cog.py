@@ -21,7 +21,7 @@ class PollCog(commands.Cog):
     @tasks.loop(seconds=30)
     async def deadline_check(self):
         """
-        Find polls whose deadline has passed and closes them
+        Find polls whose deadline has passed and closes them.
         """
         polls_col = config.db["polls"]
         polls_with_deadlines = polls_col.find({"deadline": {"$ne": None}})
@@ -124,18 +124,18 @@ class PollCog(commands.Cog):
         choice8: str = None,
     ) -> None:
         """
-        Slash command to create a new poll for the guild
-        :param ctx: SlashContext
-        :param message: The question your poll is asking
-        :param anonymous: If users should see results before the poll is closed
-        :param choice1: Choice 1
-        :param choice2: Choice 2
-        :param choice3: Choice 3
-        :param choice4: Choice 4
-        :param choice5: Choice 5
-        :param choice6: Choice 6
-        :param choice7: Choice 7
-        :param choice8: Choice 8
+        Slash command to create a new poll for the guild.
+
+        :param message: The question your poll is asking.
+        :param anonymous: If users should see results before the poll is closed.
+        :param choice1: Choice 1.
+        :param choice2: Choice 2.
+        :param choice3: Choice 3. [Optional]
+        :param choice4: Choice 4. [Optional]
+        :param choice5: Choice 5. [Optional]
+        :param choice6: Choice 6. [Optional]
+        :param choice7: Choice 7. [Optional]
+        :param choice8: Choice 8. [Optional]
         """
         if not ctx.author.guild_permissions.administrator:
             await ctx.send("This is an admin-only command")
@@ -204,9 +204,8 @@ class PollCog(commands.Cog):
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload: discord.RawReactionActionEvent):
         """
-        Handle votes
+        Handle votes.
         """
-
         # Ignore if reaction is from bot
         if payload.user_id == self.bot.user.id:
             return
@@ -278,7 +277,7 @@ class PollCog(commands.Cog):
         self, payload: discord.RawMessageDeleteEvent
     ) -> None:
         """
-        Handle if poll message is deleted
+        Handle if poll message is deleted.
         """
         message = payload.cached_message
         polls_col = config.db["polls"]
@@ -330,12 +329,15 @@ class PollCog(commands.Cog):
             {"$set": {"message_id": new_message.id}},
         )
 
-    @commands.group()
+    @commands.group(
+        help='Commands for polls created with "/poll".\nAll commands MUST be done in a reply to a poll.'
+    )
     @config.is_admin()
     async def poll(self, ctx: commands.Context) -> None:
         if ctx.invoked_subcommand is None:
             await ctx.send(
-                "Invalid: Use one of the following subcommands: deadline, close, list"
+                "Invalid: Use one of the following subcommands: `deadline`, `close`, `list`\n"
+                f"Type `{await config.get_prefix(ctx.guild)}help poll` for more details."
             )
 
     @poll.command()
@@ -372,7 +374,7 @@ class PollCog(commands.Cog):
         self, ctx: Union[commands.Context, SlashContext]
     ) -> None:  # Note: python 3.10 now allows: "commands.Context | SlashContext" notation instead of Union
         """
-        List all currently active polls in an embed
+        List all currently active polls in an embed.
         """
         logging.debug(f"Listing all active polls. Guild ID: {ctx.guild.id}")
         polls_col = config.db["polls"]
@@ -397,15 +399,21 @@ class PollCog(commands.Cog):
 
     @poll.group()
     async def deadline(self, ctx: commands.Context) -> None:
+        """
+        Set or remove the deadline for a poll.
+        """
         if ctx.invoked_subcommand is None:
-            await ctx.send("Use one of the following subcommands: set, remove")
+            await ctx.send(
+                "Use one of the following subcommands: `set`, `remove`\n"
+                f"Type `{await config.get_prefix(ctx.guild)}help poll deadline` for more details."
+            )
 
     @deadline.command()
     async def set(self, ctx: commands.Context, *, date_string: str) -> None:
         """
         Set a deadline for a poll. Reply to the poll you want to select.
-        :param ctx: Context
-        :param date_string: The date of the deadline, must be parsable (https://github.com/scrapinghub/dateparser)
+
+        :param date_string: The date of the deadline, must be parsable (https://github.com/scrapinghub/dateparser).
         """
         if ctx.message.reference is None:
             await ctx.send(
@@ -488,12 +496,10 @@ class PollCog(commands.Cog):
     async def remove(self, ctx: commands.Context) -> None:
         """
         Remove the deadline for a poll. Reply to the poll you want to select.
-        :param ctx:
-        :return:
         """
         if ctx.message.reference is None:
             await ctx.send(
-                "Invalid: You must reply to the poll you want to add a deadline for"
+                "Invalid: You must reply to the poll you want to remove a deadline from"
             )
             return
 
@@ -544,10 +550,10 @@ class PollCog(commands.Cog):
 
     async def do_close(self, message_id: int, reason: str) -> None:
         """
-        Close the poll with the given message id
-        :param message_id: The message id of the poll to be closed *must be in the database*
-        :param reason: The footer explaining why the poll was closed
-        :return: None
+        Close the poll with the given message id.
+
+        :param message_id: The message id of the poll to be closed *must be in the database*.
+        :param reason: The footer explaining why the poll was closed.
         """
         polls_col = config.db["polls"]
         poll = await polls_col.find_one({"message_id": message_id})
