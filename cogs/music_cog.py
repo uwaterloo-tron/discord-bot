@@ -4,6 +4,7 @@ Modified from https://gist.github.com/vbe0201/ade9b80f2d3b64643d854938d40a0a2d
 import asyncio
 import functools
 import itertools
+import logging
 import math
 import random
 import discord
@@ -79,7 +80,7 @@ class YTDLSource(discord.PCMVolumeTransformer):
         self.stream_url = data.get("url")
 
     def __str__(self):
-        return "**{0.title}** by **{0.uploader}**".format(self)
+        return f"**{self.title}** by **{self.uploader}**"
 
     @classmethod
     async def get_playlist_songs(
@@ -90,30 +91,69 @@ class YTDLSource(discord.PCMVolumeTransformer):
         entries,
     ):
         ctx.voice_state.songs.queueing = True
+        found_vid = False
         for entry in entries:
             if entry:
                 found_vid = True
                 partial = functools.partial(
                     cls.ytdl.extract_info, entry["id"], download=False
                 )
-                processed_info = await loop.run_in_executor(None, partial)
-                source = await cls.song_source(ctx, processed_info, search)
-                song = Song(source)
-                if not ctx.voice_state.songs.queueing:
-                    return
+                max_retries = 5
+                for i in range(1, max_retries - 1):
+                    try:
+                        processed_info = await loop.run_in_executor(None, partial)
+                        if processed_info is None:
+                            continue
+                    except youtube_dl.DownloadError as e:
+                        if (
+                            str(e)
+                            == "ERROR: Sign in to confirm your age\nThis video may be inappropriate for some users."
+                        ):
+                            embed = discord.Embed(
+                                title="",
+                                description=f"The following song is age-restricted, so it cannot be played:\n"
+                                f"**[{entry['title']}](https://www.youtube.com/watch?v={entry['id']})**",
+                                color=discord.Color.red(),
+                            )
+                            await ctx.send(embed=embed)
+                            break
+                        else:
+                            logging.error(str(e))
+                    else:
+                        source = await cls.song_source(ctx, processed_info, search)
+                        if source is None:
+                            raise YTDLError(
+                                "processed_info for playlist song contained 'entries' field with 0 elements."
+                            )
 
-                await ctx.voice_state.songs.put(song)
+                        if not ctx.voice_state.songs.queueing:
+                            return
+
+                        await ctx.voice_state.songs.put(source)
+                        break
+
+                    logging.error(f"Failed to get song: attempt {i}/{max_retries}")
+                else:
+                    embed = discord.Embed(
+                        title="",
+                        description=f"Failed to enqueue the following song (max attempts reached), skipping:\n"
+                        f"**[{entry['title']}](https://www.youtube.com/watch?v={entry['id']})**",
+                        color=discord.Color.red(),
+                    )
+                    await ctx.send(embed=embed)
 
         if not found_vid:
-            raise YTDLError(f"Couldn't find anything that matches `{search}`")
+            embed = discord.Embed(
+                title="",
+                description=f"Couldn't find anything that matches `{search}`",
+                color=discord.Color.red(),
+            )
+            await ctx.send(embed=embed)
 
     @classmethod
     async def song_source(
         cls, ctx: commands.Context, processed_info: dict, search: str
     ):
-        if processed_info is None:
-            raise YTDLError(f"Couldn't fetch `{search}`")
-
         if "entries" not in processed_info:
             info = processed_info
         else:
@@ -122,13 +162,19 @@ class YTDLSource(discord.PCMVolumeTransformer):
                 try:
                     info = processed_info["entries"].pop(0)
                 except IndexError:
-                    raise YTDLError(f"Couldn't retrieve any matches for `{search}`")
+                    embed = discord.Embed(
+                        title="",
+                        description=f"Couldn't find anything that matches `{search}`",
+                        color=discord.Color.red(),
+                    )
+                    await ctx.send(embed=embed)
+                    return None
 
-        source = cls(
-            ctx,
-            discord.FFmpegPCMAudio(info["url"], **cls.FFMPEG_OPTIONS),
-            data=info,
-        )
+        source = {
+            "ctx": ctx,
+            "data": info,
+        }
+
         return source
 
     @classmethod
@@ -140,10 +186,43 @@ class YTDLSource(discord.PCMVolumeTransformer):
         partial = functools.partial(
             cls.ytdl.extract_info, search, download=False, process=False
         )
-        data = await loop.run_in_executor(None, partial)
+
+        max_retries = 5
+        for i in range(1, max_retries - 1):
+            try:
+                data = await loop.run_in_executor(None, partial)
+            except youtube_dl.DownloadError as e:
+                if (
+                    str(e)
+                    == "ERROR: Sign in to confirm your age\nThis video may be inappropriate for some users."
+                ):
+                    embed = discord.Embed(
+                        title="",
+                        description="This song is age-restricted, so it cannot be played.",
+                        color=discord.Color.red(),
+                    )
+                    return await ctx.send(embed=embed)
+                else:
+                    logging.error(str(e))
+            else:
+                break
+            logging.error(f"Failed to get song: attempt {i}/{max_retries}")
+        else:
+            embed = discord.Embed(
+                title="",
+                description=f"Failed to enqueue this song (max attempts reached).",
+                color=discord.Color.red(),
+            )
+            await ctx.send(embed=embed)
+            raise YTDLError("Failed to find song")
 
         if data is None:
-            raise YTDLError(f"Couldn't find anything that matches `{search}`")
+            embed = discord.Embed(
+                title="",
+                description=f"Couldn't find anything that matches `{search}`",
+                color=discord.Color.red(),
+            )
+            return await ctx.send(embed=embed)
 
         if "entries" not in data:
             process_info = data
@@ -152,13 +231,25 @@ class YTDLSource(discord.PCMVolumeTransformer):
             partial = functools.partial(
                 cls.ytdl.extract_info, webpage_url, download=False
             )
-            processed_info = await loop.run_in_executor(None, partial)
+            for i in range(1, max_retries - 1):
+                processed_info = await loop.run_in_executor(None, partial)
+                if processed_info is not None:
+                    break
+            else:
+                embed = discord.Embed(
+                    title="",
+                    description=f"Couldn't find anything that matches `{search}`",
+                    color=discord.Color.red(),
+                )
+                return await ctx.send(embed=embed)
+
             source = await cls.song_source(ctx, processed_info, search)
-            song = Song(source)
-            await ctx.voice_state.songs.put(song)
+            if source is None:
+                return
+            await ctx.voice_state.songs.put(source)
             embed = discord.Embed(
                 title="",
-                description=f"Enqueued {source}",
+                description=f"Enqueued {source['data']['title']}",
                 color=discord.Color.blurple(),
             )
             await ctx.send(embed=embed)
@@ -182,13 +273,13 @@ class YTDLSource(discord.PCMVolumeTransformer):
 
         duration = []
         if days > 0:
-            duration.append("{} days".format(days))
+            duration.append(f"{days} days")
         if hours > 0:
-            duration.append("{} hours".format(hours))
+            duration.append(f"{hours} hours")
         if minutes > 0:
-            duration.append("{} minutes".format(minutes))
+            duration.append(f"{minutes} minutes")
         if seconds > 0:
-            duration.append("{} seconds".format(seconds))
+            duration.append(f"{seconds} seconds")
 
         return ", ".join(duration)
 
@@ -206,16 +297,16 @@ class Song:
         embed = (
             discord.Embed(
                 title="Now playing",
-                description="```css\n{0.source.title}\n```".format(self),
+                description=f"```css\n{self.source.title}\n```",
                 color=discord.Color.blurple(),
             )
             .add_field(name="Duration", value=duration)
             .add_field(name="Requested by", value=self.requester.mention)
             .add_field(
                 name="Uploader",
-                value="[{0.source.uploader}]({0.source.uploader_url})".format(self),
+                value=f"[{self.source.uploader}]({self.source.uploader_url})",
             )
-            .add_field(name="URL", value="[Click]({0.source.url})".format(self))
+            .add_field(name="URL", value=f"[Click]({self.source.url})")
             .set_thumbnail(url=self.source.thumbnail)
         )
 
@@ -297,8 +388,14 @@ class VoiceState:
                 # the player will disconnect due to performance
                 # reasons.
                 try:
-                    async with timeout(180):  # 3 minutes
-                        self.current = await self.songs.get()
+                    async with timeout(60 * 3):  # 3 minutes
+                        source = await self.songs.get()
+                        ffmpeg = discord.FFmpegPCMAudio(
+                            source["data"]["url"], **YTDLSource.FFMPEG_OPTIONS
+                        )
+                        self.current = Song(
+                            YTDLSource(source["ctx"], ffmpeg, data=source["data"])
+                        )
                 except asyncio.TimeoutError:
                     self.bot.loop.create_task(self.stop())
                     return
@@ -308,6 +405,7 @@ class VoiceState:
             await self.current.source.channel.send(embed=self.current.create_embed())
 
             await self.next.wait()
+            self.songs.task_done()
 
     def play_next_song(self, error=None):
         if error:
@@ -358,7 +456,6 @@ class MusicCog(commands.Cog):
         ctx.voice_state = self.get_voice_state(ctx)
 
     @commands.command(name="join", invoke_without_subcommand=True)
-    @commands.has_permissions(manage_guild=True)
     async def _join(
         self, ctx: commands.Context, *, channel: discord.VoiceChannel = None
     ):
@@ -386,7 +483,6 @@ class MusicCog(commands.Cog):
         ctx.voice_state.voice = await destination.connect()
 
     @commands.command(name="leave", aliases=["disconnect"])
-    @commands.has_permissions(manage_guild=True)
     async def _leave(self, ctx: commands.Context):
         """
         Clears the queue and leaves the voice channel.
@@ -447,7 +543,6 @@ class MusicCog(commands.Cog):
         await ctx.send(embed=ctx.voice_state.current.create_embed())
 
     @commands.command(name="pause")
-    @commands.has_permissions(manage_guild=True)
     async def _pause(self, ctx: commands.Context):
         """
         Pauses the currently playing song.
@@ -466,7 +561,6 @@ class MusicCog(commands.Cog):
             await ctx.message.add_reaction("⏯")
 
     @commands.command(name="resume")
-    @commands.has_permissions(manage_guild=True)
     async def _resume(self, ctx: commands.Context):
         """
         Resumes a currently paused song.
@@ -485,7 +579,6 @@ class MusicCog(commands.Cog):
             await ctx.message.add_reaction("⏯")
 
     @commands.command(name="clear", aliases=["cl"])
-    @commands.has_permissions(manage_guild=True)
     async def _clear(self, ctx: commands.Context):
         """
         Clears the queue.
@@ -557,6 +650,14 @@ class MusicCog(commands.Cog):
             )
             return await ctx.send(embed=embed)
 
+        if page > len(ctx.voice_state.songs) or page < 1:
+            embed = discord.Embed(
+                title="",
+                description="Invalid page number.",
+                color=discord.Color.red(),
+            )
+            return await ctx.send(embed=embed)
+
         items_per_page = 10
         pages = math.ceil(len(ctx.voice_state.songs) / items_per_page)
 
@@ -565,13 +666,11 @@ class MusicCog(commands.Cog):
 
         queue = ""
         for i, song in enumerate(ctx.voice_state.songs[start:end], start=start):
-            queue += "`{0}.` [**{1.source.title}**]({1.source.url})\n".format(
-                i + 1, song
-            )
+            queue += f"`{i + 1}.` [**{song['data']['title']}**]({song['data']['webpage_url']})\n"
 
         embed = discord.Embed(
-            description="**{} tracks:**\n\n{}".format(len(ctx.voice_state.songs), queue)
-        ).set_footer(text="Viewing page {}/{}".format(page, pages))
+            description=f"**{len(ctx.voice_state.songs)} tracks:**\n\n{queue}"
+        ).set_footer(text=f"Viewing page {page}/{pages}")
         await ctx.send(embed=embed)
 
     @commands.command(name="shuffle")
@@ -664,12 +763,7 @@ class MusicCog(commands.Cog):
             await ctx.invoke(self._join)
 
         async with ctx.typing():
-            try:
-                await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
-            except YTDLError as e:
-                await ctx.send(
-                    f"`An error occurred while processing this request: {e}`"
-                )
+            await YTDLSource.create_source(ctx, search, loop=self.bot.loop)
 
 
 def setup(bot):
