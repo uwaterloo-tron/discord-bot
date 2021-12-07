@@ -398,7 +398,8 @@ class VoiceState:
                         )
                 except asyncio.TimeoutError:
                     self.bot.loop.create_task(self.stop())
-                    return
+                    # This will cause the bot to poll infinitely. This should be improved.
+                    continue
 
             self.current.source.volume = self._volume
             self.voice.play(self.current.source, after=self.play_next_song)
