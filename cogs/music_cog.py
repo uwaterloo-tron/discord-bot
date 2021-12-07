@@ -405,6 +405,7 @@ class VoiceState:
             await self.current.source.channel.send(embed=self.current.create_embed())
 
             await self.next.wait()
+            self.current = None
             self.songs.task_done()
 
     def play_next_song(self, error=None):
@@ -421,6 +422,7 @@ class VoiceState:
 
     async def stop(self):
         self.songs.clear()
+        self.current = None
 
         if self.voice:
             await self.voice.disconnect()
@@ -539,8 +541,16 @@ class MusicCog(commands.Cog):
         """
         Displays the currently playing song.
         """
-
-        await ctx.send(embed=ctx.voice_state.current.create_embed())
+        print(self.voice_states[ctx.guild.id])
+        if ctx.voice_state.current is None:
+            embed = discord.Embed(
+                title="",
+                description="Nothing playing right now",
+                color=discord.Color.blurple(),
+            )
+            await ctx.send(embed=embed)
+        else:
+            await ctx.send(embed=ctx.voice_state.current.create_embed())
 
     @commands.command(name="pause")
     async def _pause(self, ctx: commands.Context):
