@@ -480,7 +480,20 @@ class MusicCog(commands.Cog):
 
         destination = channel or ctx.author.voice.channel
         if ctx.voice_state.voice:
+            # Pause music before joining another channel (otherwise the song freezes)
+            was_playing = False
+            if ctx.voice_state.is_playing and ctx.voice_state.voice.is_playing():
+                ctx.voice_state.voice.pause()
+                was_playing = True
+
+            await asyncio.sleep(0.5)
             await ctx.voice_state.voice.move_to(destination)
+            await asyncio.sleep(0.5)
+
+            # Resume playing the music after joining if it was playing when the command was called.
+            # If paused while it was called, stay paused.
+            if was_playing and ctx.voice_state.voice.is_paused():
+                ctx.voice_state.voice.resume()
             return
 
         ctx.voice_state.voice = await destination.connect()
