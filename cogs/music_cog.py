@@ -555,7 +555,6 @@ class MusicCog(commands.Cog):
         """
         Displays the currently playing song.
         """
-        print(self.voice_states[ctx.guild.id])
         if ctx.voice_state.current is None:
             embed = discord.Embed(
                 title="",
