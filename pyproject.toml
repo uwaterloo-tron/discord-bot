@@ -15,7 +15,7 @@ mdx-truly-sane-lists = "^1.2"
 discord-py-slash-command = "^2.3.2"
 dateparser = "^1.0.0"
 motor = "^2.4.0"
-youtube_dl = "^2021.6.6"
+youtube_dl = "^2021.12.17"
 
 [tool.poetry.dev-dependencies]
 black = {extras = ["d"], version = "^21.6b0"}
