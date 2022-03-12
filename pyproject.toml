@@ -16,6 +16,8 @@ discord-py-slash-command = "^2.3.2"
 dateparser = "^1.0.0"
 motor = "^2.4.0"
 youtube_dl = "^2021.12.17"
+pyheif = "^0.7.0"
+pdf2image = "1.14.0"
 
 [tool.poetry.dev-dependencies]
 black = {extras = ["d"], version = "^21.6b0"}
