@@ -1,7 +1,7 @@
 FROM python:3.9-slim-buster@sha256:8ffb28a4fca06fc0914dac67e801cf447df0225ea23ee1b42685de02f2555235
 
 RUN apt-get update -qq && apt-get install -y ffmpeg
-RUN apt-get install poppler-utils -y
+
 RUN pip install poetry==1.1.7
 COPY poetry.lock pyproject.toml /tmp/
 RUN cd /tmp && poetry config virtualenvs.create false && poetry install --no-dev --no-interaction
