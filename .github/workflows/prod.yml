@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Python Linting
-        uses: RojerGS/python-black-check@v1.2
+        uses: RojerGS/python-black-check@v2.0
         with:
           line-length: '88'
 
