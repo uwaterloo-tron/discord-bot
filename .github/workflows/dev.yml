@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Lint Python
-        uses: RojerGS/python-black-check@v1.2
+        uses: RojerGS/python-black-check@v2.0
         with:
           line-length: '88'
 
