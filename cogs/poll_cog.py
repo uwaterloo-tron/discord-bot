@@ -279,54 +279,9 @@ class PollCog(commands.Cog):
         """
         Handle if poll message is deleted.
         """
-        message = payload.cached_message
         polls_col = config.db["polls"]
-        poll = await polls_col.find_one(
-            {"message_id": message.id, "guild_id": message.guild.id}
-        )
-
-        # Ignore if the message deleted wasn't a poll
-        if poll is None:
-            return
-
-        logging.debug(
-            f"Poll message was deleted, recreating. Message ID: {poll['message_id']}"
-        )
-        await message.channel.send(
-            "Please Close the poll before attempting to delete it :pray:"
-        )
-
-        # Resend poll message
-        embed = message.embeds[0]
-        embed.remove_field(-1)
-        values = " \u200B ".join(
-            [f"{i} \u200B {len(j)}" for i, j in zip(self.emojis, poll["selections"])]
-        )
-        embed.add_field(
-            name="\u200B\nResults: ",
-            value=values,
-            inline=False,
-        )
-        if poll["deadline"] is not None:
-            embed.remove_field(0)
-            embed.insert_field_at(
-                index=0,
-                name="Deadline: ",
-                value=pytz.timezone("America/Toronto")
-                .localize(poll["deadline"])
-                .strftime("%Y/%m/%d %I:%M %p %Z"),
-                inline=False,
-            )
-
-        new_message = await message.channel.send(embed=embed)
-
-        for emote in self.emojis[: len(poll["selections"])]:
-            await new_message.add_reaction(emote)
-
-        # Update database with new poll message ID
-        await polls_col.update_one(
-            {"message_id": message.id, "guild_id": message.guild.id},
-            {"$set": {"message_id": new_message.id}},
+        await polls_col.delete_one(
+            {"message_id": payload.message_id, "guild_id": payload.guild_id}
         )
 
     @commands.group(
