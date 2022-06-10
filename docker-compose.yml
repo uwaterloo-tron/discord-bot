@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: ./build/Dockerfile.bot
     container_name: discord-bot
+    restart: unless-stopped
     depends_on:
       - mongodb
     volumes:
@@ -18,6 +19,7 @@ services:
   mongodb:
     image: mongo
     container_name: discord-bot-db
+    restart: unless-stopped
     ports:
       - "27017:27017"
     volumes:

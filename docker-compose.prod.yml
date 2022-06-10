@@ -3,6 +3,7 @@ services:
   bot:
     image: gcr.io/${PROJECT_ID}/${IMAGE}:${GITHUB_SHA}
     container_name: discord-bot
+    restart: unless-stopped
     depends_on:
       - mongodb
     ports:
@@ -14,6 +15,7 @@ services:
   mongodb:
     image: mongo
     container_name: discord-bot-db
+    restart: unless-stopped
     ports:
       - "27017:27017"
     volumes:
