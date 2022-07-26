@@ -147,5 +147,6 @@ class FileCog(commands.Cog):
 def setup(bot):
     # Adds cog to bot from main.py
     if config.STAGE != "dev":
-        # dont add this cog if we are in dev to avoid duplication, remove for testing
-        bot.add_cog(FileCog(bot))
+        # don't add this cog if we are in dev to avoid duplication, remove for testing
+        # bot.add_cog(FileCog(bot))
+        pass
