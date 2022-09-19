@@ -154,7 +154,7 @@ class FileCog(commands.Cog):
                 logging.debug(f"Converting {attachment.filename} to images...")
 
                 # setting the preview activeness to expire a day from when it was used
-                expiration_date = int(time.time()) + 60
+                expiration_date = int(time.time()) + 60 * 60 * 24
                 logging.debug(
                     "This pdf can be previewed again at: " + str(expiration_date)
                 )
