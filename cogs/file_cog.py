@@ -1,12 +1,14 @@
+import asyncio
+import logging
+import config
 import discord
 from discord.ext import tasks, commands
-import config
 import io
 import os
 import aiohttp
 import math
 import pyheif
-import sys
+import time
 from PIL import Image
 from pdf2image import convert_from_bytes, pdfinfo_from_bytes
 from typing import Optional
@@ -41,13 +43,35 @@ async def save_jpg_with_target_size(
         filename.seek(0)
         return filename
     else:
-        print("ERROR: No acceptable quality factor found", file=sys.stderr)
+        logging.error("ERROR: No acceptable quality factor found")
         return None
 
 
 class FileCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.active_pdf = asyncio.Queue()
+        self.current_cd = {
+            "message_id": 0,
+            "end_time": 0,
+        }
+        self.pdf_check.start()
+
+    @tasks.loop()
+    async def pdf_check(self) -> None:
+        # wait for a pdf to be previewed
+        self.current_cd = await self.active_pdf.get()
+        await asyncio.sleep(abs(self.current_cd["end_time"] - int(time.time())))
+
+        # reset pdf value to empty value
+        self.current_cd = {
+            "message_id": 0,
+            "end_time": 0,
+        }
+
+    @pdf_check.before_loop
+    async def before_pdf_check(self) -> None:
+        await self.bot.wait_until_ready()
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
@@ -112,7 +136,36 @@ class FileCog(commands.Cog):
         dpi = 200  # dots per inch
         for attachment in message.attachments:
             if any(attachment.filename.endswith(i) for i in [".pdf", ".PDF"]):
-                print(f"Converting {attachment.filename} to images...")
+                end_t = 0
+                # check if reacted pdf is in queue
+                for item in self.active_pdf._queue.__iter__():
+                    if payload.message_id == item["message_id"]:
+                        end_t = item["end_time"]
+                        break
+                # if a pdf has been found in the queue or is the next pdf to be removed the cooldown
+                if end_t != 0 or payload.message_id == self.current_cd["message_id"]:
+                    end_t = self.current_cd["end_time"] if end_t == 0 else end_t
+                    await channel.send(
+                        f"<@{str(payload.user_id)}> Please wait until <t:{end_t}:t> "
+                        f"(<t:{end_t}:R>) to preview again."
+                    )
+                    logging.debug("Invalid pdf preview attempt")
+                    return
+                logging.debug(f"Converting {attachment.filename} to images...")
+
+                # setting the preview activeness to expire a day from when it was used
+                expiration_date = int(time.time()) + 60
+                logging.debug(
+                    "This pdf can be previewed again at: " + str(expiration_date)
+                )
+
+                # add the new value to the queue
+                await self.active_pdf.put(
+                    {
+                        "message_id": payload.message_id,
+                        "end_time": expiration_date,
+                    }
+                )
 
                 async with aiohttp.ClientSession() as session:
                     async with session.get(attachment.url) as r:
@@ -120,7 +173,9 @@ class FileCog(commands.Cog):
 
                 info = pdfinfo_from_bytes(pdf_file, userpw=None, poppler_path=None)
 
-                max_pages = info["Pages"]
+                # Hard coded limit for the number of pages we preview in total
+                page_limit = 6
+                max_pages = info["Pages"] if info["Pages"] < page_limit else page_limit
                 # Hard-coded limit for the number of pages we store in memory at once.
                 pages_in_mem = 1
                 for pg in range(1, max_pages + 1, pages_in_mem):
@@ -142,11 +197,16 @@ class FileCog(commands.Cog):
                                     filename=f"{os.path.splitext(attachment.filename)}_{idx + 1}.png",
                                 )
                             )
+                if info["Pages"] > page_limit:
+                    remaining_pages = info["Pages"] - page_limit
+                    await channel.send(
+                        f"This pdf has {remaining_pages} more pages.\n"
+                        f"Download to see the rest. :)"
+                    )
 
 
 def setup(bot):
     # Adds cog to bot from main.py
     if config.STAGE != "dev":
-        # don't add this cog if we are in dev to avoid duplication, remove for testing
-        # bot.add_cog(FileCog(bot))
-        pass
+        bot.add_cog(FileCog(bot))
+    # don't add this cog if we are in dev to avoid duplication, remove for testing
