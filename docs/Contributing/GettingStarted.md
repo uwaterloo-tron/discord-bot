@@ -1,4 +1,4 @@
-# Getting started
+# Getting Started
 
 Follow this guide to learn how to set up the project, add changes, test, and merge your changes.
 
