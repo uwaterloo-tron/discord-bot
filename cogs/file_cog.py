@@ -85,8 +85,12 @@ class FileCog(commands.Cog):
             if not added_pdf and any(
                 attachment.filename.endswith(i) for i in [".pdf", ".PDF"]
             ):
-                yimin_emote = self.bot.get_emoji(733516365243220038)
-                await message.add_reaction(yimin_emote)
+                reaction_emote = (
+                    self.bot.get_emoji(735626669884309585)  # naveen emote
+                    if config.STAGE == "dev"
+                    else self.bot.get_emoji(733516365243220038)  # yimin wu emote
+                )
+                await message.add_reaction(reaction_emote)
                 added_pdf = True
             elif any(attachment.filename.endswith(i) for i in [".heic", ".HEIC"]):
                 # Download PDF from Discord CDN
@@ -123,8 +127,16 @@ class FileCog(commands.Cog):
         self, payload: discord.RawReactionActionEvent
     ) -> None:
         """Listens for a specific reaction on a file type and sends that file in a pre-viewable manner"""
-        yimin_emote = self.bot.get_emoji(733516365243220038)
-        if payload.user_id == self.bot.user.id or payload.emoji != yimin_emote:
+        reaction_emote = (
+            self.bot.get_emoji(735626669884309585)  # naveen emote
+            if config.STAGE == "dev"
+            else self.bot.get_emoji(733516365243220038)  # yimin wu emote
+        )
+        if (
+            not payload.member.guild_permissions.administrator
+            or payload.user_id == self.bot.user.id
+            or payload.emoji != reaction_emote
+        ):
             return
 
         channel = self.bot.get_channel(payload.channel_id)
@@ -174,7 +186,7 @@ class FileCog(commands.Cog):
                 info = pdfinfo_from_bytes(pdf_file, userpw=None, poppler_path=None)
 
                 # Hard coded limit for the number of pages we preview in total
-                page_limit = 6
+                page_limit = 12
                 max_pages = info["Pages"] if info["Pages"] < page_limit else page_limit
                 # Hard-coded limit for the number of pages we store in memory at once.
                 pages_in_mem = 1
@@ -207,6 +219,4 @@ class FileCog(commands.Cog):
 
 def setup(bot):
     # Adds cog to bot from main.py
-    if config.STAGE != "dev":
-        bot.add_cog(FileCog(bot))
-    # don't add this cog if we are in dev to avoid duplication, remove for testing
+    bot.add_cog(FileCog(bot))
