@@ -20,4 +20,4 @@ If you would like to add a new feature or fix a bug, feel free to do so!
 Be sure to take a look at the [contributing guide][2] before you start.
 
 [1]: https://uwaterloo-tron.github.io/discord-bot/
-[2]: https://uwaterloo-tron.github.io/discord-bot/Contributing/
+[2]: https://uwaterloo-tron.github.io/discord-bot/Contributing/GettingStarted/
