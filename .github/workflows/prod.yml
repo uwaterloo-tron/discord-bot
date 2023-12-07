@@ -72,7 +72,7 @@ jobs:
           gcloud compute ssh $GCE_INSTANCE --zone $GCE_ZONE --command \
             '
             gcloud --quiet auth configure-docker "gcr.io" && \
-            docker-compose -f "docker-compose.prod.yml" up --remove-orphans --build -d && \
+            docker compose -f "docker-compose.prod.yml" up --remove-orphans --build -d && \
             docker image prune -af \
             '
 
