@@ -1,6 +1,6 @@
-FROM python:3.9-slim-buster@sha256:8ffb28a4fca06fc0914dac67e801cf447df0225ea23ee1b42685de02f2555235
+FROM python:3.10-slim-bookworm@sha256:49454d2bf78a48f217eb25ecbcb4b5face313fea6a6e82706465a6990303ada2
 
-RUN apt-get update -qq && apt-get install -y ffmpeg poppler-utils
+RUN apt-get update -qq && apt-get install -y ffmpeg poppler-utils --fix-missing
 RUN pip install poetry==1.4.2
 COPY poetry.lock pyproject.toml /tmp/
 RUN cd /tmp && poetry config virtualenvs.create false && poetry install --no-dev --no-interaction
