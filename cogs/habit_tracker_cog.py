@@ -1,4 +1,5 @@
 import logging
+import os
 import pytz
 import discord
 import datetime
@@ -12,6 +13,7 @@ from discord_slash import SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
 from datetime import datetime, timedelta
 from discord import Guild
+import imgkit
 
 _FREQUENCY_OPTIONS = ["weekly", "monthly"]
 _DEV_FREQUENCY_OPTIONS = ["10seconds"]
@@ -91,8 +93,14 @@ class HabitTrackerCog(commands.Cog):
 
         return total_users
 
-    def format_summary(self, guild: Guild, habit: dict) -> str:
-        """Creates the weekly summary output message"""
+    """
+    Renders an image file for the weekly summary of a given habit.
+
+    The file is saved as 'habit_summary.png' in the current directory.
+    """
+
+    def generate_weekly_summary_image(self, guild: Guild, habit: dict) -> None:
+
         activity_types = habit.get("types", [])
         headers = ["User", "Total", "Goal Met"] + activity_types
         rows = []
@@ -114,11 +122,19 @@ class HabitTrackerCog(commands.Cog):
             user_name = user.name if user else f"User ID {user_id}"
             rows.append([user_name, total, met_goal] + activity_counts)
 
-        table = tabulate(rows, headers=headers, tablefmt="pretty", stralign="center")
-        return f"{period_str}\n```{table}```"
+        # Create table as HTML, then render with CSS into an image
+        table = tabulate(rows, headers=headers, tablefmt="html", stralign="center")
+        imgkit.from_string(
+            table, "habit_summary.png", css="assets/stylesheets/habit_table_dark.css"
+        )
 
-    def format_totals_table(self, guild: Guild, habit: dict) -> str:
-        """Creates the overal; total summary output message"""
+    """
+    Renders an image file for the total summary of a given habit.
+
+    The file is saved as 'totals_table.png' in the current directory.
+    """
+
+    def generate_total_summary_image(self, guild: Guild, habit: dict) -> None:
         headers = ["User"] + habit["types"] + ["Total", "Met Goals", "Missed Goals"]
         rows = []
 
@@ -140,7 +156,11 @@ class HabitTrackerCog(commands.Cog):
         # Sort rows by "Missed Goals" in descending order (last column)
         rows.sort(key=lambda r: r[-1], reverse=True)
 
-        return f"```{tabulate(rows, headers=headers, tablefmt='pretty', stralign='center')}```"
+        # Create table as HTML, then render with CSS into an image
+        table = tabulate(rows, headers=headers, tablefmt="html", stralign="center")
+        imgkit.from_string(
+            table, "totals_table.png", css="assets/stylesheets/habit_table_dark.css"
+        )
 
     @tasks.loop(hours=24)
     async def check_habits(self) -> None:
@@ -168,9 +188,11 @@ class HabitTrackerCog(commands.Cog):
                 description="How often you want to track your goals",
                 option_type=3,
                 required=True,
-                choices=_DEV_FREQUENCY_OPTIONS + _FREQUENCY_OPTIONS
-                if config.STAGE != "prod"
-                else _FREQUENCY_OPTIONS,
+                choices=(
+                    _DEV_FREQUENCY_OPTIONS + _FREQUENCY_OPTIONS
+                    if config.STAGE != "prod"
+                    else _FREQUENCY_OPTIONS
+                ),
             ),
             create_option(
                 name="goal", description="Goal per period", option_type=4, required=True
@@ -513,7 +535,6 @@ class HabitTrackerCog(commands.Cog):
             if now >= end:
                 guild = self.bot.get_guild(habit.get("guild_id"))
                 channel = self.bot.get_channel(habit.get("channel_id"))
-                summary = self.format_summary(guild, habit)
                 habit["total"] = self.update_totals(habit)
                 start_new, end_new = self.get_period_bounds(habit["frequency"])
 
@@ -535,23 +556,33 @@ class HabitTrackerCog(commands.Cog):
                     user_mentions = " ".join(
                         f"<@{user_id}>" for user_id in habit.get("users", [])
                     )
-                    await channel.send(
-                        content=user_mentions,
-                        embed=discord.Embed(
-                            title=f"{habit['name']} Summary ({habit['frequency']})",
-                            description=summary,
-                            color=discord.Color.blue(),
-                        ),
-                    )
 
-                    totals_table = self.format_totals_table(guild, habit)
-                    await channel.send(
-                        embed=discord.Embed(
-                            title=f"Totals for habit '{habit['name']}'",
-                            description=totals_table,
-                            color=discord.Color.green(),
-                        )
+                    # Generate the weekly summary, construct message, then send to channel
+                    self.generate_weekly_summary_image(guild, habit)
+
+                    current_period_summary_header = (
+                        f"# {habit['name']} Summary ({habit['frequency']})\n"
                     )
+                    habit_participants = f"Participants: {user_mentions}"
+                    current_period_summary_message = (
+                        current_period_summary_header + habit_participants
+                    )
+                    await channel.send(
+                        content=current_period_summary_message,
+                        file=discord.File("habit_summary.png"),
+                    )
+                    if os.path.exists("habit_summary.png"):
+                        os.remove("habit_summary.png")
+
+                    # Same as above for total summary
+                    self.generate_total_summary_image(guild, habit)
+                    totals_message = f"# Totals for habit {habit['name']} \n"
+                    await channel.send(
+                        content=totals_message,
+                        file=discord.File("totals_table.png"),
+                    )
+                    if os.path.exists("totals_table.png"):
+                        os.remove("totals_table.png")
 
                 else:
                     logging.error("Channel not found for habit: %s", habit["name"])
