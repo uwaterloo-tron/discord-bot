@@ -1,6 +1,6 @@
 FROM python:3.10-slim-bookworm@sha256:49454d2bf78a48f217eb25ecbcb4b5face313fea6a6e82706465a6990303ada2
 
-RUN apt-get update -qq && apt-get install -y ffmpeg poppler-utils --fix-missing
+RUN apt-get update -qq && apt-get install -y ffmpeg poppler-utils wkhtmltopdf --fix-missing
 RUN pip install poetry==1.4.2
 COPY poetry.lock pyproject.toml /tmp/
 RUN cd /tmp && poetry config virtualenvs.create false && poetry install --no-dev --no-interaction
@@ -8,5 +8,6 @@ RUN cd /tmp && poetry config virtualenvs.create false && poetry install --no-dev
 WORKDIR /bot
 COPY *.py ./
 COPY cogs ./cogs
+COPY assets ./assets
 
 CMD ["python", "-u", "main.py"]
