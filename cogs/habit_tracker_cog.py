@@ -43,7 +43,7 @@ class HabitTrackerCog(commands.Cog):
             start = (now - timedelta(days=days_since_sunday)).replace(
                 hour=0, minute=0, second=0, microsecond=0
             )
-            end = start + timedelta(days=7)
+            end = start + timedelta(days=7, hours=12)
         elif config.STAGE != "prod" and frequency == "10seconds":
             # Calculate the start of the current 10-second interval
             # e.g. if seconds = 34, start = seconds 30, end = seconds 40
@@ -108,11 +108,6 @@ class HabitTrackerCog(commands.Cog):
         current_users = habit.get("log_periods", {}).get("current", {}).get("users", {})
         goal = habit.get("goal", 0)
 
-        # Parse the known-good ISO datetime strings
-        start_dt = datetime.fromisoformat(habit["log_periods"]["current"]["start"])
-        end_dt = datetime.fromisoformat(habit["log_periods"]["current"]["end"])
-        period_str = f"Period: **{start_dt.strftime('%Y-%m-%d')}** to **{end_dt.strftime('%Y-%m-%d')}**"
-
         for user_id, user_data in current_users.items():
             total = user_data.get("count", 0)
             met_goal = "✔" if total >= goal else "✘"
@@ -162,7 +157,7 @@ class HabitTrackerCog(commands.Cog):
             table, "totals_table.png", css="assets/stylesheets/habit_table_dark.css"
         )
 
-    @tasks.loop(hours=24)
+    @tasks.loop(hours=12)
     async def check_habits(self) -> None:
         """
         Automatically checks and updates habits standings if necessary
@@ -397,7 +392,8 @@ class HabitTrackerCog(commands.Cog):
 
         # Check if activity_type is valid
         allowed_types = habit.get("types", [])
-        if type.lower() not in [t.lower() for t in allowed_types]:
+        type = type.lower()
+        if type not in [t for t in allowed_types]:
             await ctx.send(
                 f"Invalid activity type! Allowed types are: {', '.join(allowed_types)}",
                 hidden=True,
@@ -531,41 +527,28 @@ class HabitTrackerCog(commands.Cog):
         now = datetime.now(pytz.utc)
         habits = config.db["habits"].find({"started": True})
         async for habit in habits:
+            start = datetime.fromisoformat(habit["log_periods"]["current"]["start"])
             end = datetime.fromisoformat(habit["log_periods"]["current"]["end"])
             if now >= end:
                 guild = self.bot.get_guild(habit.get("guild_id"))
                 channel = self.bot.get_channel(habit.get("channel_id"))
                 habit["total"] = self.update_totals(habit)
-                start_new, end_new = self.get_period_bounds(habit["frequency"])
-
-                empty_types = {act_type: 0 for act_type in habit["types"]}
-                current_users = {
-                    str(user_id): {"types": empty_types.copy(), "count": 0}
-                    for user_id in habit["users"]
-                }
-
-                habit["log_periods"]["current"] = {
-                    "start": start_new.isoformat(),
-                    "end": end_new.isoformat(),
-                    "users": current_users,
-                }
 
                 await config.db["habits"].replace_one({"_id": habit["_id"]}, habit)
 
                 if channel:
-                    user_mentions = " ".join(
-                        f"<@{user_id}>" for user_id in habit.get("users", [])
-                    )
-
-                    # Generate the weekly summary, construct message, then send to channel
+                    # Generate the weekly summary image, to be sent
                     self.generate_weekly_summary_image(guild, habit)
-
+                    period_str = f"## Period: **{start.strftime('%B %d, %Y')}** to **{end.strftime('%B %d, %Y')}**\n"
                     current_period_summary_header = (
                         f"# {habit['name']} Summary ({habit['frequency']})\n"
                     )
+                    user_mentions = " ".join(
+                        f"<@{user_id}>" for user_id in habit.get("users", [])
+                    )
                     habit_participants = f"Participants: {user_mentions}"
                     current_period_summary_message = (
-                        current_period_summary_header + habit_participants
+                        current_period_summary_header + period_str + habit_participants
                     )
                     await channel.send(
                         content=current_period_summary_message,
@@ -586,6 +569,20 @@ class HabitTrackerCog(commands.Cog):
 
                 else:
                     logging.error("Channel not found for habit: %s", habit["name"])
+
+                start_new, end_new = self.get_period_bounds(habit["frequency"])
+
+                empty_types = {act_type: 0 for act_type in habit["types"]}
+                current_users = {
+                    str(user_id): {"types": empty_types.copy(), "count": 0}
+                    for user_id in habit["users"]
+                }
+
+                habit["log_periods"]["current"] = {
+                    "start": start_new.isoformat(),
+                    "end": end_new.isoformat(),
+                    "users": current_users,
+                }
 
 
 def setup(bot):
