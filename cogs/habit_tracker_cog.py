@@ -245,9 +245,9 @@ class HabitTrackerCog(commands.Cog):
                     "end": end.isoformat(),
                     "users": {},  # {user_id: {"types": {...}, "count": int}}
                 },
-                "total": {},  # user_id: {"types": {...}, "count": int, "achieved_goals": int, "missed_goals": int}
             },
             "started": False,
+            "total": {},  # user_id: {"types": {...}, "count": int, "achieved_goals": int, "missed_goals": int}
         }
         logging.debug(f"Adding New Tracked Habit: {name}")
         await tracked_habit_cols.insert_one(habit)
@@ -534,8 +534,6 @@ class HabitTrackerCog(commands.Cog):
                 channel = self.bot.get_channel(habit.get("channel_id"))
                 habit["total"] = self.update_totals(habit)
 
-                await config.db["habits"].replace_one({"_id": habit["_id"]}, habit)
-
                 if channel:
                     # Generate the weekly summary image, to be sent
                     self.generate_weekly_summary_image(guild, habit)
@@ -571,7 +569,6 @@ class HabitTrackerCog(commands.Cog):
                     logging.error("Channel not found for habit: %s", habit["name"])
 
                 start_new, end_new = self.get_period_bounds(habit["frequency"])
-
                 empty_types = {act_type: 0 for act_type in habit["types"]}
                 current_users = {
                     str(user_id): {"types": empty_types.copy(), "count": 0}
@@ -583,6 +580,7 @@ class HabitTrackerCog(commands.Cog):
                     "end": end_new.isoformat(),
                     "users": current_users,
                 }
+                await config.db["habits"].replace_one({"_id": habit["_id"]}, habit)
 
 
 def setup(bot):
